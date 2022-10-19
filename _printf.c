@@ -1,51 +1,40 @@
-#include "main.h"
+# include "main.h"
+# include <stdarg.h>
 
 /**
- * _printf - formatted output conversion and print data.
- * @format: input string.
+ * _printf - prints formatted output
+ * @fmt: pointer to format string
  *
- * Return: number of chars printed.
+ * Return: number of character printed
  */
 
-int _printf(const char *format, ...)
+int _printf(const char *fmt, ...)
 {
-	int i = 0, j = 0, buff_count = 0, prev_buff_count = 0;
-	char buffer[2000];
-	va_list arg;
-	call_t container[] = {
-		{'c', parse_char}, {'s', parse_str}, {'i', parse_int}, {'d', parse_int},
-		{'%', parse_perc}, {'b', parse_bin}, {'o', parse_oct}, {'x', parse_hex},
-		{'X', parse_X}, {'u', parse_uint}, {'R', parse_R13}, {'r', parse_rev},
-		{'\0', NULL}
-	};
+	va_list ap;
+	int i;
+	unsigned long int cnt;
 
-	if (!format)
+	va_start(ap, fmt);
+	i = 0;
+	cnt = 0;
+	if (!fmt || (*(fmt + i) == '%' && !*(fmt + i + 1)))
 		return (-1);
-	va_start(arg, format);
-	while (format && format[i] != '\0')
+	if (!(*(fmt + i)))
+		return (0);
+	while (*(fmt + i))
 	{
-		if (format[i] == '%')
+		if (*(fmt + i) == '%')
 		{
-			i++, prev_buff_count = buff_count;
-			for (j = 0; container[j].t != '\0'; j++)
-			{
-				if (format[i] == '\0')
-					break;
-				if (format[i] == container[j].t)
-				{
-					buff_count = container[j].f(buffer, arg, buff_count);
-					break;
-				}
-			}
-			if (buff_count == prev_buff_count && format[i])
-				i--, buffer[buff_count] = format[i], buff_count++;
+			if (*(fmt + i + 1) == '%' || *(fmt + i - 1) == '\\')
+				cnt += _putchar(*(fmt + ++i));
+			else if (get_fmt_fun(fmt + i + 1))
+				cnt += get_fmt_fun((fmt + ++i))(ap);
+			else
+				cnt += _putchar(*(fmt + i));
 		}
 		else
-			buffer[buff_count] = format[i], buff_count++;
+			cnt += _putchar(*(fmt + i));
 		i++;
 	}
-	va_end(arg);
-	buffer[buff_count] = '\0';
-	print_buff(buffer, buff_count);
-	return (buff_count);
+	return (cnt);
 }
